@@ -6,8 +6,8 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: '.env.local' }); // Load environment variables from .env.local
 
-const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY 
-const GOOGLE_CX = process.env.GOOGLE.CX
+const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+const GOOGLE_CX = process.env.GOOGLE_CX;
 const PINECONE_API_KEY = process.env.PINECONE_API_KEY;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
@@ -23,7 +23,7 @@ async function googleSearch(query, searchForRatings = false) {
 
     try {
         const response = await fetch(url);
-        
+        console.log(response)
 
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
