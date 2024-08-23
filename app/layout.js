@@ -5,7 +5,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "TCUChat - Ask anything about TCU",
-  description: "Chatbot to answers sall tcu related queries",
+  description: "Chatbot to solve all tcu related queries",
 };
 
 export default function RootLayout({ children }) {

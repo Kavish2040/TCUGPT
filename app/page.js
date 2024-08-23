@@ -1,11 +1,13 @@
 'use client'
 import { useState } from 'react';
-import { Box, Stack, Button, TextField, useMediaQuery, useTheme, CircularProgress } from '@mui/material';
+import { Box, Stack, Button, TextField, Typography, useMediaQuery, useTheme, CircularProgress } from '@mui/material';
+
+import Image from './tcubg.jpeg';  // Correct path for import
 
 export default function Home() {
   const [messages, setMessages] = useState([{
     role: 'assistant',
-    content: 'Hi, I am the Unofficial TCU Support Agent. How can I assist you today?',
+    content: 'Hi, I am the Unofficial TCU Support Agent. How can I assist you today? You can also feed me a Youtube url and ask me a question based on it',
   }]);
 
   const [message, setMessage] = useState('');
@@ -70,11 +72,21 @@ export default function Home() {
       justifyContent="center"
       alignItems="center"
       sx={{
-        backgroundImage: 'url("/path-to-your-background-image.jpg")',
+        backgroundImage: `url(${Image})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
     >
+      <Typography variant="h2" gutterBottom component="h1" sx={{
+        color: '#4d1979',
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
+        mb: 4,
+        textShadow: '0 0 8px rgba(255,255,255,0.8), 0 0 10px rgba(255,255,255,0.5)', // Adding glow effect
+        fontSize: '2.5rem',  // Adjust font size as needed
+      }}>
+        TCU-GPT
+      </Typography>
       <Stack
         direction="column"
         width={isMobile ? '90%' : '600px'}
@@ -86,6 +98,7 @@ export default function Home() {
         sx={{
           bgcolor: 'rgba(255, 255, 255, 0.8)',
           overflow: 'hidden',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
         }}
       >
         <Stack
@@ -94,6 +107,7 @@ export default function Home() {
           flexGrow={1}
           overflow="auto"
           maxHeight="100%"
+          sx={{ paddingRight: '5px' }} // Prevents scrollbar from covering content
         >
           {messages.map((message, index) => (
             <Box
@@ -102,7 +116,7 @@ export default function Home() {
               justifyContent={message.role === 'assistant' ? 'flex-start' : 'flex-end'}
             >
               <Box
-                bgcolor={message.role === 'assistant' ? '#4d1979' : 'black'}
+                bgcolor={message.role === 'assistant' ? '#4d1979' : '#000000'}
                 color="white"
                 borderRadius={10}
                 p={2}

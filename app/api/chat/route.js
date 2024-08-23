@@ -4,7 +4,7 @@ import fetch from 'node-fetch';
 import { YoutubeTranscript } from 'youtube-transcript';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: '.env.local' }); // Load environment variables from .env.local
+dotenv.config({ path: '.env.local' }); 
 
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 const GOOGLE_CX = process.env.GOOGLE_CX;
@@ -12,12 +12,15 @@ const PINECONE_API_KEY = process.env.PINECONE_API_KEY;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 
-// Helper function to perform Google search
-async function googleSearch(query, searchForRatings = false) {
+async function googleSearch(query, searchForRatings = false, searchForFood = false) {
     let url;
     if (searchForRatings) {
         url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX}&q=${encodeURIComponent(query + ' site:ratemyprofessors.com')}`;
-    } else {
+    }
+    if (searchForFood) {
+        url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX}&q=${encodeURIComponent(query + ' site:engage.tcu.edu/events')}`;
+    }   
+    else {
         url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX}&q=${encodeURIComponent(query)}`;
     }
 
@@ -43,35 +46,38 @@ async function googleSearch(query, searchForRatings = false) {
 }
 
 
-// Refine user query based on keywords
 function refineQuery(userQuery) {
     userQuery = userQuery.trim().toLowerCase();
     let searchForRatings = false;
+    let searchForFood = false;
     const urlRegex = /(https?:\/\/[^\s]+)/g;
 
 
     if (userQuery.includes('rating') || userQuery.includes('ratings')) {
         userQuery += ' rate my professor';
         searchForRatings = true;
-    } else if (userQuery.includes('calendar') || userQuery.includes('break') || userQuery.includes('p/nc') || userQuery.includes('deadline') || userQuery.includes('holiday')) {
+    } if (userQuery.includes('calendar') || userQuery.includes('break') || userQuery.includes('p/nc') || userQuery.includes('deadline') || userQuery.includes('holiday')) {
         userQuery += ' TCU academic calendar';
-    } else if (userQuery.includes('dorm') || userQuery.includes('housing')) {
+    } if (userQuery.includes('dorm') || userQuery.includes('housing')) {
         userQuery += ' TCU dorm reviews 2024';
-    } else if (!(userQuery.match(urlRegex))){
+    } if (!(userQuery.match(urlRegex))){
         userQuery += ' Texas Christian University';
     }
-    else if (userQuery.includes('rating') || userQuery.includes('ratings')) {
+     if (userQuery.includes('rating') || userQuery.includes('ratings')) {
             userQuery = userQuery.replace("Texas Christian University", " ");
             searchForRatings = true;
         }
-    else if (userQuery.includes('book') || userQuery.includes('full book') || userQuery.includes('pdf') || userQuery.includes('book download link')) {
+        if (userQuery.includes('food') || userQuery.includes('free food')) {
+            searchForFood = true;
+        }
+    if (userQuery.includes('book') || userQuery.includes('full book') || userQuery.includes('pdf') || userQuery.includes('book link')) {
         userQuery = userQuery.replace("Texas Christian University", " ");
-        userQuery += 'Amazon or walmart '
+        userQuery += 'Download Book pdf'
         }
     
 
 console.log(userQuery)
-    return { refinedQuery: userQuery.replace('?', ''), searchForRatings };
+    return { refinedQuery: userQuery.replace('?', ''), searchForRatings, searchForFood };
 }
 
 // Helper function to get YouTube transcript
@@ -87,14 +93,14 @@ export async function POST(req) {
     const { messages } = await req.json();
 
     let userQuery = messages.filter(m => m.role === 'user').reverse()[0]?.content || '';
-    let { refinedQuery, searchForRatings } = refineQuery(userQuery);
+    let { refinedQuery, searchForRatings, searchForFood } = refineQuery(userQuery);
 
     // Check if the user query contains a URL
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const urls = userQuery.match(urlRegex);
 
     if (urls && urls.length > 0) {
-        // Extract and use the YouTube transcript as part of the refined query
+        
         const youtubeTranscript = await getYouTubeTranscript(urls[0]);
         refinedQuery += ' ' + 'from this text provided, give an answer directly based on the query from the given text:' + youtubeTranscript;
     }
@@ -103,11 +109,11 @@ export async function POST(req) {
         return new NextResponse('No query provided.', { status: 400 });
     }
 
-    const searchResults = await googleSearch(refinedQuery, searchForRatings);
+    const searchResults = await googleSearch(refinedQuery, searchForRatings, searchForFood);
 
+    console.log(searchResults)
 
-
-    // Construct a more detailed prompt for the AI
+   
     const chatResponse = await openai.chat.completions.create({
         messages: [
             { role: 'system', content: "You are an expert on Texas Christian University. Provide concise, accurate, and contextually relevant answers based on the search results provided." },
