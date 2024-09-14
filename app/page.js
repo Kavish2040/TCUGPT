@@ -7,7 +7,7 @@ import Image from './tcubg.jpeg';  // Correct path for import
 export default function Home() {
   const [messages, setMessages] = useState([{
     role: 'assistant',
-    content: 'Hi, I am the Unofficial TCU Support Agent. How can I assist you today? You can also feed me a Youtube url and ask me a question based on it',
+    content: 'Hi, I am the Unofficial TCU Support Agent. How can I assist you today?',
   }]);
 
   const [message, setMessage] = useState('');
